@@ -914,11 +914,15 @@ cardEl.addEventListener("click", () => {
   if (drawn.reversed) cardEl.classList.add("reversed");
 
   drawHint.style.display = "none";
-  setTimeout(() => { toStep3.style.display = "block"; }, 900);
+  // めくった瞬間に占い結果生成へ自動遷移（フリップ演出を1.2秒だけ見せてから）
+  setTimeout(() => {
+    buildResult();
+    gotoStep(3);
+  }, 1200);
 });
 
 /* ============================================================
-   結果生成 → Step3 表示
+   結果生成 → Step3 表示 (任意の手動再実行用)
    ============================================================ */
 toStep3.addEventListener("click", () => {
   buildResult();
