@@ -261,16 +261,32 @@
       linear-gradient(135deg, #2a1a3f 0%, #0e0716 100%);
     border:1.5px solid var(--gold);
     box-shadow:0 14px 50px rgba(0,0,0,.7), 0 0 24px rgba(201,169,97,.18), inset 0 0 0 6px rgba(11,7,16,.6), inset 0 0 0 7px rgba(201,169,97,.35);
+    overflow:hidden;
+  }
+  .card-back .cb-img{
+    position:absolute;
+    inset:7px;
+    width:calc(100% - 14px);
+    height:calc(100% - 14px);
+    object-fit:cover;
+    border-radius:4px;
+    display:block;
+  }
+  /* 旧 sigil（カード裏画像が読めなかった時のフォールバック） */
+  .card-back .sigil{
+    position:absolute;
+    inset:0;
     display:flex;
     align-items:center;
     justify-content:center;
-  }
-  .card-back .sigil{
     font-family:"Cinzel Decorative",serif;
     font-size:60px;
     color:var(--gold-bright);
     text-shadow:0 0 18px rgba(201,169,97,.6);
+    pointer-events:none;
+    z-index:0;
   }
+  .card-back .cb-img{ z-index:1; }
   .card-back::after{
     content:"";
     position:absolute;
@@ -336,6 +352,59 @@
     animation:pulse 1.6s ease-in-out infinite;
   }
   @keyframes pulse{ 0%,100%{opacity:.55} 50%{opacity:1} }
+
+  .drawn-name{
+    margin-top:14px;
+    min-height:42px;
+    text-align:center;
+    opacity:0;
+    transform:translateY(6px);
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  .drawn-name.show{ opacity:1; transform:translateY(0); }
+  .drawn-name .jp{
+    display:block;
+    font-family:"Shippori Mincho",serif;
+    font-size:18px;
+    font-weight:700;
+    letter-spacing:.18em;
+    color:var(--gold-bright);
+    text-shadow:0 0 14px rgba(201,169,97,.4);
+    line-height:1.4;
+  }
+  .drawn-name .en{
+    display:block;
+    font-family:"Cinzel",serif;
+    font-size:9.5px;
+    letter-spacing:.4em;
+    text-indent:.4em;
+    color:var(--cream-sub);
+    margin-top:4px;
+  }
+
+  .card-name-label{
+    margin:14px auto 8px;
+    text-align:center;
+  }
+  .card-name-label .jp{
+    display:block;
+    font-family:"Shippori Mincho",serif;
+    font-size:20px;
+    font-weight:700;
+    letter-spacing:.18em;
+    color:var(--gold-bright);
+    text-shadow:0 0 14px rgba(201,169,97,.4);
+    line-height:1.4;
+  }
+  .card-name-label .en{
+    display:block;
+    font-family:"Cinzel",serif;
+    font-size:10px;
+    letter-spacing:.4em;
+    text-indent:.4em;
+    color:var(--cream-sub);
+    margin-top:4px;
+  }
 
   /* ===== Step3: 結果 ===== */
   .result-card-wrap{
@@ -586,6 +655,7 @@
       <div class="deck-stage">
         <div class="card" id="card" role="button" aria-label="カードを引く">
           <div class="card-face card-back">
+            <img class="cb-img" src="images/tarot/card-back.jpg" alt="">
             <div class="sigil">✦</div>
           </div>
           <div class="card-face card-front" id="card-front">
@@ -594,6 +664,7 @@
         </div>
       </div>
       <div class="draw-hint" id="draw-hint">Tap the card</div>
+      <div class="drawn-name" id="drawn-name" aria-live="polite"></div>
 
       <button type="button" class="primary-btn" id="to-step3" style="display:none;margin-top:28px;">✦ 占いの結果を見る ✦</button>
     </section>
@@ -605,12 +676,16 @@
 
       <div class="result-card-wrap">
         <div class="card flipped" id="result-card">
-          <div class="card-face card-back"><div class="sigil">✦</div></div>
+          <div class="card-face card-back">
+            <img class="cb-img" src="images/tarot/card-back.jpg" alt="">
+            <div class="sigil">✦</div>
+          </div>
           <div class="card-face card-front" id="result-card-front">
             <img class="cf-img" id="result-card-front-img" alt="">
           </div>
         </div>
       </div>
+      <div id="result-card-name" class="card-name-label"></div>
       <div id="pos-tag" class="pos-tag">—</div>
 
       <div class="reading-loading" id="reading-loading" style="display:none;">
@@ -899,6 +974,8 @@ function resetCard(){
   cardEl.classList.remove("flipped","reversed");
   drawHint.style.display = "block";
   toStep3.style.display = "none";
+  const dn = document.getElementById("drawn-name");
+  if (dn){ dn.classList.remove("show"); dn.innerHTML = ""; }
 }
 
 cardEl.addEventListener("click", () => {
@@ -918,11 +995,18 @@ cardEl.addEventListener("click", () => {
   if (drawn.reversed) cardEl.classList.add("reversed");
 
   drawHint.style.display = "none";
-  // めくった瞬間に占い結果生成へ自動遷移（フリップ演出を1.2秒だけ見せてから）
+
+  // カード名テキスト（フリップ後フェードイン）
+  const dn = document.getElementById("drawn-name");
+  const positionLabel = drawn.reversed ? "（逆位置）" : "（正位置）";
+  dn.innerHTML = `<span class="jp">${drawn.card.jp}<span style="font-size:.7em;font-weight:400;letter-spacing:.1em;margin-left:8px;color:var(--cream-sub);">${positionLabel}</span></span><span class="en">${drawn.card.name.toUpperCase()}</span>`;
+  setTimeout(() => dn.classList.add("show"), 600);
+
+  // めくった瞬間に占い結果生成へ自動遷移（フリップ演出を見せてから）
   setTimeout(() => {
     buildResult();
     gotoStep(3);
-  }, 1200);
+  }, 1800);
 });
 
 /* ============================================================
@@ -944,6 +1028,10 @@ async function buildResult(){
   rcImg.alt = card.jp;
   document.getElementById("result-card").classList.toggle("reversed", reversed);
   document.getElementById("pos-tag").textContent = position;
+
+  // 引いたカードの名前テキスト
+  document.getElementById("result-card-name").innerHTML =
+    `<span class="jp">${card.jp}</span><span class="en">${card.name.toUpperCase()}</span>`;
   document.getElementById("result-title").innerHTML = `${state.name ? state.name + "さんへの" : "あなたへの"}<span>メッセージ</span>`;
 
   // ローディング表示
