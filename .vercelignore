@@ -1,0 +1,16 @@
+webapp/
+node_modules/
+.next/
+out/
+dist/
+.turbo/
+.git/
+.github/
+.claude/
+codex-review-*/
+gigafile_images/
+*.tsbuildinfo
+.DS_Store
+README.md
+serve.py
+download_cast.sh
