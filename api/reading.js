@@ -148,9 +148,13 @@ function sanitize(text) {
 
 async function callOpenRouter({ birthDate, shuku, card, reversed }) {
   const key = (process.env.OPENROUTER_API_KEY || "").trim();
-  if (!key) return null;
+  if (!key) {
+    console.error("[reading] OPENROUTER_API_KEY missing — falling back");
+    return null;
+  }
 
   const model = (process.env.OPENROUTER_MODEL || DEFAULT_MODEL).trim();
+  console.log(`[reading] calling OpenRouter model=${model} keyLen=${key.length}`);
   const today = new Intl.DateTimeFormat("ja-JP", {
     timeZone: "Asia/Tokyo", year: "numeric", month: "long", day: "numeric", weekday: "long"
   }).format(new Date());
@@ -207,16 +211,30 @@ ${card.jp}（${card.name}）／${position}
       },
       body: JSON.stringify({ model, messages, temperature: 0.85 }),
     });
-  } catch {
+  } catch (err) {
     clearTimeout(t);
+    console.error(`[reading] fetch threw: ${err && err.message}`);
     return null;
   }
   clearTimeout(t);
-  if (!res.ok) return null;
+  if (!res.ok) {
+    let bodyText = "";
+    try { bodyText = (await res.text()).slice(0, 500); } catch {}
+    console.error(`[reading] OpenRouter non-OK status=${res.status} body=${bodyText}`);
+    return null;
+  }
   let data;
-  try { data = await res.json(); } catch { return null; }
-  const text = sanitize(data?.choices?.[0]?.message?.content);
-  if (!text || text.length < 400) return null;
+  try { data = await res.json(); } catch (err) {
+    console.error(`[reading] failed to parse JSON: ${err && err.message}`);
+    return null;
+  }
+  const raw = data?.choices?.[0]?.message?.content || "";
+  const text = sanitize(raw);
+  if (!text || text.length < 200) {
+    console.error(`[reading] response too short (raw=${raw.length} sanitized=${text.length}) — falling back. data.error=${JSON.stringify(data?.error || null)}`);
+    return null;
+  }
+  console.log(`[reading] OpenRouter ok, length=${text.length}`);
   return text;
 }
 
@@ -299,6 +317,8 @@ module.exports = async (req, res) => {
     reading = localFallback({ shuku, card, reversed });
     source = "fallback";
   }
+
+  console.log(`[reading] done source=${source} bd=${birthDate} card=${card.id}/${card.name} reversed=${reversed}`);
 
   return res.status(200).json({
     reading,
