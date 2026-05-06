@@ -131,11 +131,14 @@ function resolveShuku(y, m, d) {
 
 // ===== OpenRouter =====
 // 上から順番に試す。:free モデルは時期により可用性が変わるため複数候補を並べる。
+// 2026年初頭時点で OpenRouter で安定して見つかる無料モデルを優先。
 const DEFAULT_MODEL_CHAIN = [
-  "google/gemini-2.0-flash-exp:free",
+  "deepseek/deepseek-chat-v3-0324:free",
   "meta-llama/llama-3.3-70b-instruct:free",
-  "mistralai/mistral-nemo:free",
-  "google/gemma-2-9b-it:free",
+  "qwen/qwen-2.5-72b-instruct:free",
+  "mistralai/mistral-small-3.2-24b-instruct:free",
+  "google/gemma-3-27b-it:free",
+  "meta-llama/llama-3.2-3b-instruct:free",
 ];
 const FORBIDDEN_TERMS = [
   "宿曜", "二十七宿", "二十八宿", "27宿",
