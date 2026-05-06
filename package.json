@@ -1,0 +1,9 @@
+{
+  "name": "valhalla-static",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Static LP + serverless tarot reading API for Yggdrasill / Valhalla",
+  "engines": {
+    "node": ">=18"
+  }
+}
