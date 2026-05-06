@@ -357,15 +357,22 @@
   .tarot-card{
     width:54px;
     height:90px;
-    border:1px solid var(--gold-dim);
+    border:1px solid var(--gold);
     border-radius:4px;
-    background:linear-gradient(160deg, rgba(201,169,97,.07) 0%, rgba(26,15,34,.9) 100%);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:26px;
-    box-shadow:0 4px 20px rgba(0,0,0,.5), 0 0 0 1px rgba(201,169,97,.1);
+    background:#1a0f22;
+    overflow:hidden;
+    box-shadow:0 4px 20px rgba(0,0,0,.5), 0 0 0 1px rgba(201,169,97,.15);
     transition:transform .3s ease;
+    position:relative;
+  }
+  .tarot-card img{
+    position:absolute;
+    inset:2px;
+    width:calc(100% - 4px);
+    height:calc(100% - 4px);
+    object-fit:cover;
+    border-radius:2px;
+    display:block;
   }
   .tarot-card:nth-child(1){ transform:rotate(-8deg) translateY(4px); }
   .tarot-card:nth-child(2){ transform:rotate(0deg) translateY(-4px); z-index:1; }
@@ -512,9 +519,9 @@
     <h2 class="tarot-title"><span>キャストがカードになって</span><br>今日のあなたを占う。</h2>
     <p class="tarot-desc">22人のキャストが大アルカナに姿を変え、<br>今日のあなたへ一枚を引き当てる。<br>運命のメッセージを、いま受け取って。</p>
     <div class="tarot-cards">
-      <div class="tarot-card">🌙</div>
-      <div class="tarot-card">⭐</div>
-      <div class="tarot-card">🔮</div>
+      <div class="tarot-card"><img src="images/tarot/card-back.jpg" alt=""></div>
+      <div class="tarot-card"><img src="images/tarot/card-back.jpg" alt=""></div>
+      <div class="tarot-card"><img src="images/tarot/card-back.jpg" alt=""></div>
     </div>
     <div class="tarot-badge">Demo Available</div><br>
     <a href="tarot.html" class="tarot-btn">✦ タロット占いを試す ✦</a>
