@@ -243,17 +243,27 @@
     border-radius:10px;
     cursor:pointer;
     transform-style:preserve-3d;
+    -webkit-transform-style:preserve-3d;
     transition:transform 1s cubic-bezier(.25,.8,.3,1);
+    -webkit-transition:-webkit-transform 1s cubic-bezier(.25,.8,.3,1);
+    will-change:transform;
   }
-  .card.flipped{ transform:rotateY(180deg); }
-  .card.reversed{ transform:rotateY(180deg) rotate(180deg); }
+  .card.flipped{
+    transform:rotateY(180deg);
+    -webkit-transform:rotateY(180deg);
+  }
+  .card.reversed{
+    transform:rotateY(180deg) rotate(180deg);
+    -webkit-transform:rotateY(180deg) rotate(180deg);
+  }
   .card-face{
     position:absolute;
     inset:0;
     border-radius:10px;
     backface-visibility:hidden;
     -webkit-backface-visibility:hidden;
-    overflow:hidden;
+    /* overflow:hidden は iOS Safari の preserve-3d を壊すので使わない */
+    /* 角丸はカード自身と内側 img の border-radius で吸収する */
   }
   .card-back{
     background:
@@ -261,7 +271,6 @@
       linear-gradient(135deg, #2a1a3f 0%, #0e0716 100%);
     border:1.5px solid var(--gold);
     box-shadow:0 14px 50px rgba(0,0,0,.7), 0 0 24px rgba(201,169,97,.18), inset 0 0 0 6px rgba(11,7,16,.6), inset 0 0 0 7px rgba(201,169,97,.35);
-    overflow:hidden;
   }
   .card-back .cb-img{
     position:absolute;
@@ -297,11 +306,12 @@
   }
   .card-front{
     transform:rotateY(180deg);
+    -webkit-transform:rotateY(180deg);
     background:linear-gradient(180deg, #1d1230 0%, #0d0717 100%);
     border:1.5px solid var(--gold);
     box-shadow:0 14px 50px rgba(0,0,0,.7), 0 0 30px rgba(201,169,97,.25), inset 0 0 0 6px rgba(11,7,16,.6), inset 0 0 0 7px rgba(201,169,97,.4);
     padding:0;
-    overflow:hidden;
+    /* overflow:hidden は iOS Safari の preserve-3d を壊すので不要 */
   }
   .card-front .cf-img{
     position:absolute;
