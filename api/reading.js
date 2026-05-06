@@ -129,16 +129,15 @@ function resolveShuku(y, m, d) {
   return { name, catchy, theme, strength, caution, lunar };
 }
 
-// ===== OpenRouter =====
-// 上から順番に試す。:free モデルは時期により可用性が変わるため複数候補を並べる。
-// 2026年初頭時点で OpenRouter で安定して見つかる無料モデルを優先。
+// ===== Groq =====
+// OpenAI互換のエンドポイント。Groqは無料枠でも快速・1日数千リクエスト可。
+// モデルは2026年初頭時点で安定して動くものから順番に試す。
+const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 const DEFAULT_MODEL_CHAIN = [
-  "deepseek/deepseek-chat-v3-0324:free",
-  "meta-llama/llama-3.3-70b-instruct:free",
-  "qwen/qwen-2.5-72b-instruct:free",
-  "mistralai/mistral-small-3.2-24b-instruct:free",
-  "google/gemma-3-27b-it:free",
-  "meta-llama/llama-3.2-3b-instruct:free",
+  "llama-3.3-70b-versatile",
+  "llama-3.1-8b-instant",
+  "deepseek-r1-distill-llama-70b",
+  "gemma2-9b-it",
 ];
 const FORBIDDEN_TERMS = [
   "宿曜", "二十七宿", "二十八宿", "27宿",
@@ -155,16 +154,16 @@ function sanitize(text) {
   return out.replace(/\n{3,}/g, "\n\n").trim();
 }
 
-async function callOpenRouter({ birthDate, shuku, card, reversed }) {
-  const key = (process.env.OPENROUTER_API_KEY || "").trim();
+async function callLLM({ birthDate, shuku, card, reversed }) {
+  const key = (process.env.GROQ_API_KEY || "").trim();
   if (!key) {
-    console.error("[reading] OPENROUTER_API_KEY missing — falling back");
+    console.error("[reading] GROQ_API_KEY missing — falling back");
     return { text: null, error: { reason: "no_api_key" } };
   }
 
-  const envModel = (process.env.OPENROUTER_MODEL || "").trim();
+  const envModel = (process.env.GROQ_MODEL || "").trim();
   const models = envModel ? [envModel] : DEFAULT_MODEL_CHAIN;
-  console.log(`[reading] OpenRouter keyLen=${key.length} models=${JSON.stringify(models)}`);
+  console.log(`[reading] Groq keyLen=${key.length} models=${JSON.stringify(models)}`);
   const today = new Intl.DateTimeFormat("ja-JP", {
     timeZone: "Asia/Tokyo", year: "numeric", month: "long", day: "numeric", weekday: "long"
   }).format(new Date());
@@ -210,7 +209,7 @@ ${card.jp}（${card.name}）／${position}
   for (const model of models) {
     const result = await tryOneModel({ key, model, messages });
     if (result.text) {
-      console.log(`[reading] OpenRouter ok model=${model} length=${result.text.length}`);
+      console.log(`[reading] Groq ok model=${model} length=${result.text.length}`);
       return { text: result.text, error: null, modelUsed: model };
     }
     errors.push({ model, ...result.error });
@@ -224,14 +223,12 @@ async function tryOneModel({ key, model, messages }) {
   const t = setTimeout(() => ctrl.abort(), 22000);
   let res;
   try {
-    res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    res = await fetch(GROQ_ENDPOINT, {
       method: "POST",
       signal: ctrl.signal,
       headers: {
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": process.env.PUBLIC_APP_URL || "https://valhalla-gilt.vercel.app",
-        "X-Title": "Yggdrasill Tarot",
       },
       body: JSON.stringify({ model, messages, temperature: 0.85 }),
     });
@@ -249,7 +246,9 @@ async function tryOneModel({ key, model, messages }) {
   try { data = await res.json(); } catch (err) {
     return { text: null, error: { reason: "json_parse", message: String(err && err.message) } };
   }
-  const raw = data?.choices?.[0]?.message?.content || "";
+  let raw = data?.choices?.[0]?.message?.content || "";
+  // DeepSeek-R1系は <think>...</think> という reasoning ブロックを返すので除去
+  raw = raw.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
   const text = sanitize(raw);
   if (!text || text.length < 200) {
     return { text: null, error: { reason: "too_short", rawLen: raw.length, sanitizedLen: text.length, providerError: data?.error || null } };
@@ -330,7 +329,7 @@ module.exports = async (req, res) => {
   const shuku = resolveShuku(yy, mm, dd);
   const card = tarotData[cardId];
 
-  const llm = await callOpenRouter({ birthDate, shuku, card, reversed });
+  const llm = await callLLM({ birthDate, shuku, card, reversed });
   let reading;
   let source;
   if (llm.text) {
