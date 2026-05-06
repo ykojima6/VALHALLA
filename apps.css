@@ -2994,6 +2994,30 @@ body { font-family:'Noto Sans JP',sans-serif; background: var(--dark); color: va
   color: rgba(255,255,255,.4);
   margin: 0;
 }
+.tarot-full-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 28px;
+  padding: 16px 30px;
+  background: linear-gradient(135deg, rgba(201,169,97,.22) 0%, rgba(201,169,97,.08) 100%);
+  border: 1px solid var(--gold, #C9A961);
+  border-radius: 999px;
+  color: #E8CB85;
+  font-family: "Cormorant SC", "Cinzel", serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .28em;
+  text-indent: .28em;
+  text-decoration: none;
+  box-shadow: 0 0 28px rgba(201,169,97,.18), inset 0 1px 0 rgba(232,203,133,.18);
+  transition: all .2s ease;
+}
+.tarot-full-cta:hover {
+  background: linear-gradient(135deg, rgba(201,169,97,.32) 0%, rgba(201,169,97,.16) 100%);
+  box-shadow: 0 0 40px rgba(201,169,97,.32);
+  transform: translateY(-1px);
+}
 
 @keyframes fadeInUp {
   from { opacity:0; transform:translateY(16px); }

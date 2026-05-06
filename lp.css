@@ -325,6 +325,31 @@ img { display: block; max-width: 100%; }
 }
 .feature-list li:last-child { border-bottom: none; }
 
+.feature-tarot-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 22px;
+  padding: 14px 26px;
+  background: linear-gradient(135deg, rgba(201,169,97,.22) 0%, rgba(201,169,97,.08) 100%);
+  border: 1px solid var(--gold, #C9A961);
+  border-radius: 999px;
+  color: #E8CB85;
+  font-family: "Cormorant SC", "Cinzel", serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .28em;
+  text-indent: .28em;
+  text-decoration: none;
+  box-shadow: 0 0 28px rgba(201,169,97,.18), inset 0 1px 0 rgba(232,203,133,.18);
+  transition: all .2s ease;
+}
+.feature-tarot-cta:hover {
+  background: linear-gradient(135deg, rgba(201,169,97,.32) 0%, rgba(201,169,97,.16) 100%);
+  box-shadow: 0 0 40px rgba(201,169,97,.32);
+  transform: translateY(-1px);
+}
+
 /* --- Mock Cards --- */
 .feature-card-mock {
   background: white;
