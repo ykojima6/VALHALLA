@@ -284,13 +284,19 @@
     background:linear-gradient(180deg, #1d1230 0%, #0d0717 100%);
     border:1.5px solid var(--gold);
     box-shadow:0 14px 50px rgba(0,0,0,.7), 0 0 30px rgba(201,169,97,.25), inset 0 0 0 6px rgba(11,7,16,.6), inset 0 0 0 7px rgba(201,169,97,.4);
-    padding:18px 14px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:space-between;
-    text-align:center;
+    padding:0;
+    overflow:hidden;
   }
+  .card-front .cf-img{
+    position:absolute;
+    inset:7px;
+    width:calc(100% - 14px);
+    height:calc(100% - 14px);
+    object-fit:cover;
+    border-radius:4px;
+    display:block;
+  }
+  /* 旧 glyph / num / jp / en 用スタイル（後方互換、現状未使用） */
   .card-front .num{
     font-family:"Cinzel",serif;
     font-size:11px;
@@ -583,10 +589,7 @@
             <div class="sigil">✦</div>
           </div>
           <div class="card-face card-front" id="card-front">
-            <div class="num"></div>
-            <div class="glyph"></div>
-            <div class="jp"></div>
-            <div class="en"></div>
+            <img class="cf-img" id="card-front-img" alt="">
           </div>
         </div>
       </div>
@@ -604,10 +607,7 @@
         <div class="card flipped" id="result-card">
           <div class="card-face card-back"><div class="sigil">✦</div></div>
           <div class="card-face card-front" id="result-card-front">
-            <div class="num"></div>
-            <div class="glyph"></div>
-            <div class="jp"></div>
-            <div class="en"></div>
+            <img class="cf-img" id="result-card-front-img" alt="">
           </div>
         </div>
       </div>
@@ -694,6 +694,11 @@ const SHUKU_DETAILS = {
   "婁": {reading:"ろう", catchy:"気配りバランサー",       theme:"世話",    strength:"相手に合わせる柔軟性",       caution:"自分の希望を後回しにしない"},
   "胃": {reading:"い",   catchy:"欲しいを掴むタイプ",     theme:"獲得",    strength:"必要なものを取りに行く",     caution:"強引さや執着に注意"},
 };
+
+// 画像パスを各カードに付与（/images/tarot/00-fool.jpg 形式）
+MAJOR_ARCANA.forEach((c, i) => {
+  c.image = `images/tarot/${String(i).padStart(2,"0")}-${c.slug}.jpg`;
+});
 
 const SHUKU_ORDER = ["昴","畢","觜","参","井","鬼","柳","星","張","翼","軫","角","亢","氐","房","心","尾","箕","斗","女","虚","危","室","壁","奎","婁","胃"];
 const SHUKU_LIST = SHUKU_ORDER.map((name, index) => ({ index, name, ...SHUKU_DETAILS[name] }));
@@ -904,11 +909,10 @@ cardEl.addEventListener("click", () => {
   state.card = drawn.card;
   state.reversed = drawn.reversed;
 
-  // フロント面を埋めてからフリップ
-  cardFront.querySelector(".num").textContent  = pad2(drawn.index) + " · ARCANA";
-  cardFront.querySelector(".glyph").textContent = drawn.card.glyph;
-  cardFront.querySelector(".jp").textContent    = drawn.card.jp;
-  cardFront.querySelector(".en").textContent    = drawn.card.name;
+  // フロント面の画像を差し込んでからフリップ
+  const frontImg = document.getElementById("card-front-img");
+  frontImg.src = drawn.card.image;
+  frontImg.alt = drawn.card.jp;
 
   cardEl.classList.add("flipped");
   if (drawn.reversed) cardEl.classList.add("reversed");
@@ -934,12 +938,10 @@ async function buildResult(){
   const reversed = state.reversed;
   const position = reversed ? "逆位置" : "正位置";
 
-  // 結果カード表示
-  const rcFront = document.getElementById("result-card-front");
-  rcFront.querySelector(".num").textContent   = pad2(MAJOR_ARCANA.indexOf(card)) + " · ARCANA";
-  rcFront.querySelector(".glyph").textContent = card.glyph;
-  rcFront.querySelector(".jp").textContent    = card.jp;
-  rcFront.querySelector(".en").textContent    = card.name;
+  // 結果カード表示（画像差し込み）
+  const rcImg = document.getElementById("result-card-front-img");
+  rcImg.src = card.image;
+  rcImg.alt = card.jp;
   document.getElementById("result-card").classList.toggle("reversed", reversed);
   document.getElementById("pos-tag").textContent = position;
   document.getElementById("result-title").innerHTML = `${state.name ? state.name + "さんへの" : "あなたへの"}<span>メッセージ</span>`;
