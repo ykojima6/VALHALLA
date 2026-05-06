@@ -130,7 +130,13 @@ function resolveShuku(y, m, d) {
 }
 
 // ===== OpenRouter =====
-const DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
+// 上から順番に試す。:free モデルは時期により可用性が変わるため複数候補を並べる。
+const DEFAULT_MODEL_CHAIN = [
+  "google/gemini-2.0-flash-exp:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
+  "mistralai/mistral-nemo:free",
+  "google/gemma-2-9b-it:free",
+];
 const FORBIDDEN_TERMS = [
   "宿曜", "二十七宿", "二十八宿", "27宿",
   ...SHUKU_ORDER.map(n => `${n}宿`),
@@ -150,11 +156,12 @@ async function callOpenRouter({ birthDate, shuku, card, reversed }) {
   const key = (process.env.OPENROUTER_API_KEY || "").trim();
   if (!key) {
     console.error("[reading] OPENROUTER_API_KEY missing — falling back");
-    return null;
+    return { text: null, error: { reason: "no_api_key" } };
   }
 
-  const model = (process.env.OPENROUTER_MODEL || DEFAULT_MODEL).trim();
-  console.log(`[reading] calling OpenRouter model=${model} keyLen=${key.length}`);
+  const envModel = (process.env.OPENROUTER_MODEL || "").trim();
+  const models = envModel ? [envModel] : DEFAULT_MODEL_CHAIN;
+  console.log(`[reading] OpenRouter keyLen=${key.length} models=${JSON.stringify(models)}`);
   const today = new Intl.DateTimeFormat("ja-JP", {
     timeZone: "Asia/Tokyo", year: "numeric", month: "long", day: "numeric", weekday: "long"
   }).format(new Date());
@@ -196,8 +203,22 @@ ${card.jp}（${card.name}）／${position}
     }
   ];
 
+  const errors = [];
+  for (const model of models) {
+    const result = await tryOneModel({ key, model, messages });
+    if (result.text) {
+      console.log(`[reading] OpenRouter ok model=${model} length=${result.text.length}`);
+      return { text: result.text, error: null, modelUsed: model };
+    }
+    errors.push({ model, ...result.error });
+    console.error(`[reading] model=${model} failed: ${JSON.stringify(result.error)}`);
+  }
+  return { text: null, error: { reason: "all_models_failed", attempts: errors } };
+}
+
+async function tryOneModel({ key, model, messages }) {
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 25000);
+  const t = setTimeout(() => ctrl.abort(), 22000);
   let res;
   try {
     res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -213,29 +234,24 @@ ${card.jp}（${card.name}）／${position}
     });
   } catch (err) {
     clearTimeout(t);
-    console.error(`[reading] fetch threw: ${err && err.message}`);
-    return null;
+    return { text: null, error: { reason: "fetch_threw", message: String(err && err.message) } };
   }
   clearTimeout(t);
   if (!res.ok) {
     let bodyText = "";
-    try { bodyText = (await res.text()).slice(0, 500); } catch {}
-    console.error(`[reading] OpenRouter non-OK status=${res.status} body=${bodyText}`);
-    return null;
+    try { bodyText = (await res.text()).slice(0, 600); } catch {}
+    return { text: null, error: { reason: "non_ok", status: res.status, body: bodyText } };
   }
   let data;
   try { data = await res.json(); } catch (err) {
-    console.error(`[reading] failed to parse JSON: ${err && err.message}`);
-    return null;
+    return { text: null, error: { reason: "json_parse", message: String(err && err.message) } };
   }
   const raw = data?.choices?.[0]?.message?.content || "";
   const text = sanitize(raw);
   if (!text || text.length < 200) {
-    console.error(`[reading] response too short (raw=${raw.length} sanitized=${text.length}) — falling back. data.error=${JSON.stringify(data?.error || null)}`);
-    return null;
+    return { text: null, error: { reason: "too_short", rawLen: raw.length, sanitizedLen: text.length, providerError: data?.error || null } };
   }
-  console.log(`[reading] OpenRouter ok, length=${text.length}`);
-  return text;
+  return { text, error: null };
 }
 
 function localFallback({ shuku, card, reversed }) {
@@ -311,9 +327,13 @@ module.exports = async (req, res) => {
   const shuku = resolveShuku(yy, mm, dd);
   const card = tarotData[cardId];
 
-  let reading = await callOpenRouter({ birthDate, shuku, card, reversed });
-  let source = "llm";
-  if (!reading) {
+  const llm = await callOpenRouter({ birthDate, shuku, card, reversed });
+  let reading;
+  let source;
+  if (llm.text) {
+    reading = llm.text;
+    source = "llm";
+  } else {
     reading = localFallback({ shuku, card, reversed });
     source = "fallback";
   }
@@ -325,5 +345,7 @@ module.exports = async (req, res) => {
     card: { id: card.id, jp: card.jp, name: card.name },
     reversed,
     source,
+    modelUsed: llm.modelUsed || null,
+    upstreamError: llm.error || null,
   });
 };
