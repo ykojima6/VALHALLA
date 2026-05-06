@@ -970,7 +970,16 @@ const drawHint = document.getElementById("draw-hint");
 const toStep3 = document.getElementById("to-step3");
 
 function resetCard(){
+  // フリップ巻き戻し時に前のカード絵が一瞬見えるのを防ぐため、
+  // 1) transition を一時停止して即時アンフリップ
+  // 2) フロント面の画像 src を空にして、万一見えても無地にする
+  cardEl.style.transition = "none";
   cardEl.classList.remove("flipped","reversed");
+  // forced reflow（このスタイル変更を即時反映してから transition を戻す）
+  void cardEl.offsetWidth;
+  cardEl.style.transition = "";
+  const fimg = document.getElementById("card-front-img");
+  if (fimg) fimg.removeAttribute("src");
   drawHint.style.display = "block";
   toStep3.style.display = "none";
   const dn = document.getElementById("drawn-name");
