@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>YGGDRASILL — 宿曜タロット占い (Demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700;900&family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+SC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Shippori+Mincho:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night-bg:    #0B0710;
+    --night-2:     #1A0F22;
+    --night-3:     #241433;
+    --gold:        #C9A961;
+    --gold-bright: #E8CB85;
+    --gold-dim:    rgba(201,169,97,.35);
+    --cream:       #F5EFE0;
+    --cream-sub:   rgba(245,239,224,.7);
+    --violet:      #6E4FA0;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{
+    background:var(--night-bg);
+    color:var(--cream);
+    font-family:"Shippori Mincho","Cormorant Garamond",serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  body{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    position:relative;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(110,79,160,.35) 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 100%, rgba(201,169,97,.12) 0%, transparent 60%),
+      var(--night-bg);
+  }
+
+  /* 共通ヘッダー */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 22px 0;
+  }
+  .back-link{
+    font-family:"Cormorant SC",serif;
+    font-size:10px;
+    letter-spacing:.4em;
+    color:var(--gold-bright);
+    text-decoration:none;
+    text-indent:.4em;
+    border:1px solid var(--gold-dim);
+    padding:6px 12px;
+    border-radius:999px;
+    background:rgba(11,7,16,.6);
+  }
+  .brand{
+    font-family:"Cormorant SC",serif;
+    font-size:9.5px;
+    letter-spacing:.5em;
+    color:var(--gold);
+    text-indent:.5em;
+  }
+
+  .container{
+    padding:30px 24px 60px;
+    text-align:center;
+  }
+
+  .eyebrow{
+    font-family:"Cormorant SC",serif;
+    font-size:10px;
+    letter-spacing:.55em;
+    color:var(--gold);
+    text-indent:.55em;
+    margin-bottom:14px;
+    text-transform:uppercase;
+  }
+  h1.title{
+    font-family:"Shippori Mincho",serif;
+    font-weight:700;
+    font-size:24px;
+    letter-spacing:.16em;
+    color:var(--cream);
+    line-height:1.55;
+    margin-bottom:14px;
+  }
+  h1.title span{ color:var(--gold-bright); }
+  .lead{
+    font-size:13px;
+    line-height:1.95;
+    color:var(--cream-sub);
+    letter-spacing:.06em;
+    margin-bottom:30px;
+  }
+
+  /* セクション切替 */
+  .step{ display:none; }
+  .step.active{ display:block; animation:fadeIn .5s ease both; }
+  @keyframes fadeIn{ from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  /* ===== Step1: 入力 ===== */
+  .form-card{
+    background:linear-gradient(160deg, rgba(36,20,51,.75) 0%, rgba(11,7,16,.85) 100%);
+    border:1px solid var(--gold-dim);
+    padding:28px 22px 26px;
+    border-radius:6px;
+    box-shadow:0 12px 40px rgba(0,0,0,.5), inset 0 1px 0 rgba(232,203,133,.08);
+  }
+  .field{
+    margin-bottom:22px;
+    text-align:left;
+  }
+  .field label{
+    display:block;
+    font-family:"Cormorant SC",serif;
+    font-size:10px;
+    letter-spacing:.4em;
+    color:var(--gold);
+    text-indent:.4em;
+    margin-bottom:10px;
+    text-transform:uppercase;
+  }
+  .date-row{
+    display:flex;
+    gap:8px;
+  }
+  .date-row select{
+    flex:1;
+    background:rgba(11,7,16,.85);
+    border:1px solid var(--gold-dim);
+    color:var(--cream);
+    padding:14px 10px;
+    font-family:"Shippori Mincho",serif;
+    font-size:14px;
+    letter-spacing:.06em;
+    border-radius:4px;
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50%),linear-gradient(135deg,var(--gold) 50%,transparent 50%);
+    background-position:calc(100% - 14px) 50%,calc(100% - 9px) 50%;
+    background-size:5px 5px,5px 5px;
+    background-repeat:no-repeat;
+    padding-right:26px;
+  }
+  .date-row select:focus{
+    outline:none;
+    border-color:var(--gold-bright);
+    box-shadow:0 0 0 2px rgba(201,169,97,.2);
+  }
+  .text-input{
+    width:100%;
+    background:rgba(11,7,16,.85);
+    border:1px solid var(--gold-dim);
+    color:var(--cream);
+    padding:14px 14px;
+    font-family:"Shippori Mincho",serif;
+    font-size:14px;
+    letter-spacing:.06em;
+    border-radius:4px;
+  }
+  .text-input:focus{
+    outline:none;
+    border-color:var(--gold-bright);
+    box-shadow:0 0 0 2px rgba(201,169,97,.2);
+  }
+  .field-hint{
+    margin-top:8px;
+    font-size:10.5px;
+    color:var(--cream-sub);
+    letter-spacing:.06em;
+    line-height:1.6;
+  }
+  .err{
+    color:#ff8a8a;
+    font-size:11px;
+    margin-top:10px;
+    letter-spacing:.04em;
+    min-height:14px;
+  }
+
+  .primary-btn{
+    display:block;
+    width:100%;
+    padding:18px 24px;
+    margin-top:8px;
+    background:linear-gradient(135deg, rgba(201,169,97,.25) 0%, rgba(201,169,97,.1) 100%);
+    border:1px solid var(--gold);
+    color:var(--gold-bright);
+    font-family:"Cinzel",serif;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.32em;
+    text-indent:.32em;
+    box-shadow:0 0 28px rgba(201,169,97,.18), inset 0 1px 0 rgba(232,203,133,.18);
+    cursor:pointer;
+    transition:all .2s ease;
+    border-radius:2px;
+  }
+  .primary-btn:hover{
+    background:linear-gradient(135deg, rgba(201,169,97,.35) 0%, rgba(201,169,97,.18) 100%);
+    box-shadow:0 0 40px rgba(201,169,97,.32);
+  }
+  .primary-btn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+  }
+
+  .ghost-btn{
+    display:inline-block;
+    margin-top:18px;
+    padding:12px 22px;
+    background:transparent;
+    border:1px solid var(--gold-dim);
+    color:var(--cream-sub);
+    font-family:"Cormorant SC",serif;
+    font-size:10px;
+    letter-spacing:.35em;
+    text-indent:.35em;
+    cursor:pointer;
+    border-radius:999px;
+    text-decoration:none;
+  }
+  .ghost-btn:hover{ color:var(--gold-bright); border-color:var(--gold); }
+
+  /* ===== Step2: ドロー ===== */
+  .deck-stage{
+    position:relative;
+    height:360px;
+    margin:14px auto 24px;
+    perspective:1200px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .card{
+    position:relative;
+    width:200px;
+    height:330px;
+    border-radius:10px;
+    cursor:pointer;
+    transform-style:preserve-3d;
+    transition:transform 1s cubic-bezier(.25,.8,.3,1);
+  }
+  .card.flipped{ transform:rotateY(180deg); }
+  .card.reversed{ transform:rotateY(180deg) rotate(180deg); }
+  .card-face{
+    position:absolute;
+    inset:0;
+    border-radius:10px;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+    overflow:hidden;
+  }
+  .card-back{
+    background:
+      radial-gradient(circle at 50% 50%, rgba(232,203,133,.18) 0%, transparent 60%),
+      linear-gradient(135deg, #2a1a3f 0%, #0e0716 100%);
+    border:1.5px solid var(--gold);
+    box-shadow:0 14px 50px rgba(0,0,0,.7), 0 0 24px rgba(201,169,97,.18), inset 0 0 0 6px rgba(11,7,16,.6), inset 0 0 0 7px rgba(201,169,97,.35);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .card-back .sigil{
+    font-family:"Cinzel Decorative",serif;
+    font-size:60px;
+    color:var(--gold-bright);
+    text-shadow:0 0 18px rgba(201,169,97,.6);
+  }
+  .card-back::after{
+    content:"";
+    position:absolute;
+    inset:14px;
+    border:1px solid var(--gold-dim);
+    border-radius:4px;
+    pointer-events:none;
+  }
+  .card-front{
+    transform:rotateY(180deg);
+    background:linear-gradient(180deg, #1d1230 0%, #0d0717 100%);
+    border:1.5px solid var(--gold);
+    box-shadow:0 14px 50px rgba(0,0,0,.7), 0 0 30px rgba(201,169,97,.25), inset 0 0 0 6px rgba(11,7,16,.6), inset 0 0 0 7px rgba(201,169,97,.4);
+    padding:18px 14px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:space-between;
+    text-align:center;
+  }
+  .card-front .num{
+    font-family:"Cinzel",serif;
+    font-size:11px;
+    letter-spacing:.4em;
+    color:var(--gold);
+    text-indent:.4em;
+  }
+  .card-front .glyph{
+    font-size:80px;
+    line-height:1;
+    color:var(--gold-bright);
+    text-shadow:0 0 30px rgba(201,169,97,.6), 0 0 12px rgba(232,203,133,.5);
+    margin:6px 0;
+  }
+  .card-front .jp{
+    font-family:"Shippori Mincho",serif;
+    font-size:22px;
+    font-weight:700;
+    letter-spacing:.16em;
+    color:var(--cream);
+  }
+  .card-front .en{
+    font-family:"Cinzel",serif;
+    font-size:10px;
+    letter-spacing:.32em;
+    text-indent:.32em;
+    color:var(--gold);
+    margin-top:6px;
+  }
+
+  .draw-hint{
+    font-size:12px;
+    color:var(--cream-sub);
+    letter-spacing:.16em;
+    text-indent:.16em;
+    margin-top:6px;
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse{ 0%,100%{opacity:.55} 50%{opacity:1} }
+
+  /* ===== Step3: 結果 ===== */
+  .result-card-wrap{
+    margin:6px auto 22px;
+    display:flex;
+    justify-content:center;
+  }
+  .result-card-wrap .card{
+    width:160px;
+    height:264px;
+    cursor:default;
+  }
+  .result-card-wrap .card-front .glyph{ font-size:64px; }
+  .result-card-wrap .card-front .jp{ font-size:18px; }
+
+  .pos-tag{
+    display:inline-block;
+    margin-bottom:12px;
+    padding:5px 14px;
+    background:rgba(201,169,97,.12);
+    border:1px solid var(--gold-dim);
+    color:var(--gold-bright);
+    font-family:"Cormorant SC",serif;
+    font-size:10px;
+    letter-spacing:.35em;
+    text-indent:.35em;
+    border-radius:999px;
+  }
+
+  .summary{
+    background:linear-gradient(160deg, rgba(36,20,51,.65) 0%, rgba(11,7,16,.85) 100%);
+    border:1px solid var(--gold-dim);
+    padding:22px 22px 24px;
+    border-radius:6px;
+    text-align:left;
+    margin-bottom:18px;
+    box-shadow:inset 0 1px 0 rgba(232,203,133,.06);
+  }
+  .summary h3{
+    font-family:"Cormorant SC",serif;
+    font-size:10px;
+    letter-spacing:.5em;
+    color:var(--gold);
+    text-indent:.5em;
+    margin-bottom:10px;
+    font-weight:500;
+    text-transform:uppercase;
+  }
+  .summary .key{
+    font-family:"Shippori Mincho",serif;
+    font-size:18px;
+    font-weight:700;
+    color:var(--cream);
+    letter-spacing:.1em;
+    margin-bottom:8px;
+  }
+  .summary .key small{
+    font-size:11px;
+    color:var(--gold-bright);
+    margin-left:8px;
+    letter-spacing:.18em;
+    font-weight:500;
+  }
+  .summary p{
+    font-size:13px;
+    line-height:1.95;
+    color:var(--cream);
+    letter-spacing:.04em;
+  }
+  .summary .meta{
+    margin-top:10px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .summary .meta span{
+    background:rgba(201,169,97,.1);
+    border:1px solid var(--gold-dim);
+    color:var(--gold-bright);
+    font-size:10.5px;
+    padding:4px 10px;
+    border-radius:999px;
+    letter-spacing:.06em;
+  }
+
+  .reading{
+    background:rgba(11,7,16,.55);
+    border:1px solid var(--gold-dim);
+    padding:24px 22px 26px;
+    border-radius:6px;
+    text-align:left;
+    margin-bottom:24px;
+  }
+  .reading h2{
+    font-family:"Shippori Mincho",serif;
+    font-size:16px;
+    font-weight:700;
+    color:var(--gold-bright);
+    letter-spacing:.16em;
+    margin:18px 0 10px;
+    padding-bottom:6px;
+    border-bottom:1px solid var(--gold-dim);
+  }
+  .reading h2:first-child{ margin-top:0; }
+  .reading p{
+    font-size:13px;
+    line-height:2;
+    color:var(--cream);
+    letter-spacing:.04em;
+    margin-bottom:10px;
+  }
+  .reading .keyphrase{
+    margin-top:18px;
+    padding:14px 16px;
+    background:linear-gradient(135deg, rgba(201,169,97,.18) 0%, rgba(201,169,97,.06) 100%);
+    border-left:2px solid var(--gold);
+    font-family:"Shippori Mincho",serif;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:.12em;
+    color:var(--gold-bright);
+    line-height:1.7;
+  }
+
+  .actions{
+    display:flex;
+    gap:10px;
+    flex-direction:column;
+  }
+
+  .footnote{
+    margin-top:30px;
+    font-size:10px;
+    letter-spacing:.18em;
+    color:var(--cream-sub);
+    line-height:1.7;
+    opacity:.7;
+  }
+
+  /* お知らせ用バッジ */
+  .privacy{
+    margin-top:14px;
+    font-size:10.5px;
+    color:var(--cream-sub);
+    letter-spacing:.04em;
+    line-height:1.7;
+  }
+  .privacy::before{
+    content:"🔒 ";
+  }
+</style>
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="teaser.html" class="back-link">← Back</a>
+    <span class="brand">GROUP YGGDRASILL</span>
+    <span style="width:60px"></span>
+  </header>
+
+  <main class="container">
+
+    <!-- ===== Step1: 入力 ===== -->
+    <section class="step active" id="step1">
+      <div class="eyebrow">✦ Tarot × Shukuyo ✦</div>
+      <h1 class="title">宿曜とタロットで<br><span>運命のキャストを占う</span></h1>
+      <p class="lead">あなたの<strong>生年月日</strong>から導かれるキャラクタータイプと、<br>1枚のタロットカードを融合した、<br>今日のあなたへのメッセージ。</p>
+
+      <div class="form-card">
+        <div class="field">
+          <label>Date of Birth — 生年月日</label>
+          <div class="date-row">
+            <select id="bd-year"></select>
+            <select id="bd-month"></select>
+            <select id="bd-day"></select>
+          </div>
+          <p class="field-hint">※ 入力データはこのブラウザ内でのみ使用され、外部送信されません。</p>
+        </div>
+
+        <div class="field">
+          <label>Name — お名前 (任意)</label>
+          <input type="text" id="bd-name" class="text-input" placeholder="任意 (例: みお)" maxlength="20" autocomplete="off">
+        </div>
+
+        <div class="err" id="form-err"></div>
+
+        <button type="button" class="primary-btn" id="to-step2">✦ 占いを始める ✦</button>
+
+        <p class="privacy">入力情報はLocalStorageにも保存しません。ページを閉じれば消えます。</p>
+      </div>
+    </section>
+
+    <!-- ===== Step2: カードを引く ===== -->
+    <section class="step" id="step2">
+      <div class="eyebrow">✦ Draw a Card ✦</div>
+      <h1 class="title"><span>1枚</span>、引いてください</h1>
+      <p class="lead">心を落ち着けて、<br>カードに触れてみてください。</p>
+
+      <div class="deck-stage">
+        <div class="card" id="card" role="button" aria-label="カードを引く">
+          <div class="card-face card-back">
+            <div class="sigil">✦</div>
+          </div>
+          <div class="card-face card-front" id="card-front">
+            <div class="num"></div>
+            <div class="glyph"></div>
+            <div class="jp"></div>
+            <div class="en"></div>
+          </div>
+        </div>
+      </div>
+      <div class="draw-hint" id="draw-hint">Tap the card</div>
+
+      <button type="button" class="primary-btn" id="to-step3" style="display:none;margin-top:28px;">✦ 占いの結果を見る ✦</button>
+    </section>
+
+    <!-- ===== Step3: 結果 ===== -->
+    <section class="step" id="step3">
+      <div class="eyebrow">✦ Your Reading ✦</div>
+      <h1 class="title" id="result-title">あなたへの<span>メッセージ</span></h1>
+
+      <div class="result-card-wrap">
+        <div class="card flipped" id="result-card">
+          <div class="card-face card-back"><div class="sigil">✦</div></div>
+          <div class="card-face card-front" id="result-card-front">
+            <div class="num"></div>
+            <div class="glyph"></div>
+            <div class="jp"></div>
+            <div class="en"></div>
+          </div>
+        </div>
+      </div>
+      <div id="pos-tag" class="pos-tag">正位置</div>
+
+      <div class="summary">
+        <h3>Your Character Type — 宿曜タイプ</h3>
+        <div class="key" id="shuku-name">— <small id="shuku-reading"></small></div>
+        <p id="shuku-desc"></p>
+        <div class="meta">
+          <span id="shuku-strength"></span>
+          <span id="shuku-caution"></span>
+        </div>
+      </div>
+
+      <div class="reading" id="reading-body">
+        <!-- 動的に生成 -->
+      </div>
+
+      <div class="actions">
+        <button type="button" class="primary-btn" id="retry">✦ もう一度引く ✦</button>
+        <a href="teaser.html" class="ghost-btn">Back to Teaser</a>
+      </div>
+
+      <p class="footnote">※ 本占いはエンタメ目的のデモ版です。本実装ではキャストとのマッチング、毎日の運勢、ボイスメッセージ等にも対応予定です。</p>
+    </section>
+
+  </main>
+
+<script>
+/* ============================================================
+   Tarot × Shukuyo demo (client-only)
+   - 22 major arcana data adapted from fortune-mvp/src/lib/tarot.ts
+   - 27 shuku data adapted from fortune-mvp/src/lib/shukuyo.ts
+   - Uses solar-date fallback (not lunar) for shuku index
+   ============================================================ */
+
+const MAJOR_ARCANA = [
+  {slug:"fool",            name:"The Fool",          jp:"愚者",     glyph:"🃏", upright:"気まぐれで不安定。目的がぼやけやすく、ふらっと動きたくなる。", reversed:"間違いに気づき、目的を持って動き直す。甘い誘いには注意する。"},
+  {slug:"magician",        name:"The Magician",      jp:"奇術師",   glyph:"✦",  upright:"独創力とチャンス。技術や言葉を使って、新しい芽を出す。",       reversed:"口先だけになりやすい。未熟さやミスを整え、足元を見直す。"},
+  {slug:"high-priestess",  name:"The High Priestess",jp:"女教皇",   glyph:"☽",  upright:"知識、気品、理性。ロマンチックでも一歩ずつ考えて進む。",       reversed:"考えが浅くなりやすい。反発や気まぐれで物事を散らかさない。"},
+  {slug:"empress",         name:"The Empress",       jp:"女帝",     glyph:"♀",  upright:"安定、豊かさ、幸せ。実りが育ち、愛情や魅力が広がる。",         reversed:"不安定さや嫉妬。ぜいたく、甘え、ライバル意識に注意する。"},
+  {slug:"emperor",         name:"The Emperor",       jp:"皇帝",     glyph:"♔",  upright:"力、支配、行動力。目的を実現し、現実を動かす強さがある。",     reversed:"無気力や見かけ倒し。強く出すぎると信用を失いやすい。"},
+  {slug:"hierophant",      name:"The Hierophant",    jp:"教皇",     glyph:"☩",  upright:"慈悲、寛容、安心感。良き相談相手や心の転換が助けになる。",     reversed:"思いやり不足や反発。形だけの正しさや物質へのこだわりに注意。"},
+  {slug:"lovers",          name:"The Lovers",        jp:"恋人",     glyph:"♥",  upright:"恋愛、誘惑、楽しさ。心が動き、遊びやときめきが強くなる。",     reversed:"気まぐれ、嫉妬、別れ。浮ついた態度や方針変更に注意する。"},
+  {slug:"chariot",         name:"The Chariot",       jp:"戦車",     glyph:"⚔",  upright:"勝利、成功、決断。強い意志で状況をコントロールする。",         reversed:"敗北や妨害。勢いが乱れると、けんかや挫折につながりやすい。"},
+  {slug:"strength",        name:"Strength",          jp:"剛毅",     glyph:"∞",  upright:"勇気、情熱、元気。困難を突破し、努力で欲しいものを得る。",     reversed:"自信のなさや無気力。押し切られず、力の使い方を整える。"},
+  {slug:"hermit",          name:"The Hermit",        jp:"隠者",     glyph:"✦",  upright:"思慮分別とアドバイス。すぐ動かず、学びや研究から答えを探す。", reversed:"軽率さや未熟さ。よい助言が得にくく、プレッシャーに負けやすい。"},
+  {slug:"wheel-of-fortune",name:"Wheel of Fortune",  jp:"運命の輪", glyph:"☸",  upright:"チャンス、発展、幸運。事態が好転し、運命的な流れが来る。",     reversed:"不運や伸び悩み。悪い方へ考えすぎず、タイミングを待つ。"},
+  {slug:"justice",         name:"Justice",           jp:"正義",     glyph:"⚖",  upright:"誠実、中立、公正。無理をせず、正しい判断で克服する。",         reversed:"不公平、偏見、独断。バランスを崩さず、ずるさを避ける。"},
+  {slug:"hanged-man",      name:"The Hanged Man",    jp:"刑死者",   glyph:"☥",  upright:"苦しい時期、身動きの取りにくさ。忍耐と自己犠牲が問われる。",   reversed:"見通しは出るが油断は禁物。わがままを直し、軌道修正する。"},
+  {slug:"death",           name:"Death",             jp:"死神",     glyph:"☠",  upright:"損失、破局、見切り。終わらせるべきものをはっきりさせる。",     reversed:"希望が戻る。一時的な失敗から立て直し、思わぬ回復がある。"},
+  {slug:"temperance",      name:"Temperance",        jp:"節制",     glyph:"⚱",  upright:"忍耐、反省、調和。心を素直にして、力を蓄える。",               reversed:"対立、不一致、浪費。強情やプライドをゆるめる。"},
+  {slug:"devil",           name:"The Devil",         jp:"悪魔",     glyph:"⛧",  upright:"悪い誘惑や転落。理性を失いやすく、困難な事態に注意する。",     reversed:"目が覚めて自立する。誘惑に勝ち、まじめに立て直す。"},
+  {slug:"tower",           name:"The Tower",         jp:"塔",       glyph:"⌂",  upright:"破壊、失敗、急なトラブル。古い考えやおごりが崩れる。",         reversed:"小さく済む危険。誤解、うわさ、だまされやすさを早めに見抜く。"},
+  {slug:"star",            name:"The Star",          jp:"星",       glyph:"★",  upright:"希望、順調、よい未来。よい愛やチャンスが訪れる。",             reversed:"悲観、あきらめ、疲れ。計画が流れても希望を捨てない。"},
+  {slug:"moon",            name:"The Moon",          jp:"月",       glyph:"☾",  upright:"不安定、あざむき、見えない敵。裏側や危険に気づくサイン。",     reversed:"ウソを見抜く。小さな危険で済み、決心と安心が戻る。"},
+  {slug:"sun",             name:"The Sun",           jp:"太陽",     glyph:"☀",  upright:"幸福、成功、満足。目的を成し遂げ、明るい発展がある。",         reversed:"孤独やむなしさ。望み通りでなくても人間関係を整える。"},
+  {slug:"judgement",       name:"Judgement",         jp:"審判",     glyph:"♆",  upright:"再生、再起、目覚め。発想を変えると愛や流れがよみがえる。",     reversed:"未決定、延期、こだわり。古い考えを変えないと進みにくい。"},
+  {slug:"world",           name:"The World",         jp:"世界",     glyph:"⊕",  upright:"成功、完成、幸運。目的を遂げ、すばらしい関係や成果に近づく。", reversed:"挫折や不満足。中途半端で終わらせず、未練を整理する。"},
+];
+
+const SHUKU_DETAILS = {
+  "昴": {reading:"ぼう", catchy:"プライドビューティー",   theme:"格",      strength:"価値あるものを見抜く",       caution:"プライドで助けを拒まない"},
+  "畢": {reading:"ひつ", catchy:"マイペース職人",         theme:"安定",    strength:"着実に守り育てる",           caution:"変化を嫌いすぎない"},
+  "觜": {reading:"し",   catchy:"言語化マスター",         theme:"言葉",    strength:"状況を言語化する",           caution:"批評が冷たく響かないように"},
+  "参": {reading:"しん", catchy:"ムードメーカー",         theme:"行動",    strength:"場を動かす明るさ",           caution:"飽きやすさを予定で補う"},
+  "井": {reading:"せい", catchy:"知性シェアタイプ",       theme:"泉",      strength:"知識を人の役に立てる",       caution:"理屈で感情を覆わない"},
+  "鬼": {reading:"き",   catchy:"ピュアひらめきタイプ",   theme:"無垢",    strength:"純粋な発想で突破する",       caution:"警戒心の薄さに注意"},
+  "柳": {reading:"りゅう",catchy:"ドラマチック情熱タイプ",theme:"熱",      strength:"強い想いを伝える",           caution:"気分に飲まれすぎない"},
+  "星": {reading:"せい", catchy:"ステージスター",         theme:"舞台",    strength:"自分の色で人を惹きつける",   caution:"目立つことへの恐れを手放す"},
+  "張": {reading:"ちょう",catchy:"華やかプロデューサー", theme:"拡張",    strength:"物事を大きく見せる力",       caution:"見栄で負担を増やさない"},
+  "翼": {reading:"よく", catchy:"自由トラベラー",         theme:"飛翔",    strength:"遠くを見る広い視点",         caution:"理想の場所を探し続けない"},
+  "軫": {reading:"しん", catchy:"癒やしチューナー",       theme:"癒やし",  strength:"人の痛みに寄り添う",         caution:"背負いすぎて消耗しない"},
+  "角": {reading:"かく", catchy:"ご縁クリエイター",       theme:"成長",    strength:"新しい縁を育てる力",         caution:"勢いだけで約束を増やしすぎない"},
+  "亢": {reading:"こう", catchy:"芯つよエレガンス",       theme:"品格",    strength:"筋を通して信頼を得る",       caution:"正しさで相手を追い詰めない"},
+  "氐": {reading:"てい", catchy:"安心ベースタイプ",       theme:"根",      strength:"人を安心させる持久力",       caution:"身内意識が強くなりすぎる"},
+  "房": {reading:"ぼう", catchy:"愛されオーラ",           theme:"魅力",    strength:"場の空気を豊かにする",       caution:"甘えと依存の境目を見る"},
+  "心": {reading:"しん", catchy:"本音センサー",           theme:"感情",    strength:"人の本音に触れる直感",       caution:"感情の波で判断しない"},
+  "尾": {reading:"び",   catchy:"ストイック完璧主義",     theme:"集中",    strength:"粘り強く成果へ寄せる",       caution:"細部にこだわり孤立しない"},
+  "箕": {reading:"き",   catchy:"風まかせ突破タイプ",     theme:"風",      strength:"停滞を動かす軽やかさ",       caution:"言葉が鋭くなりすぎる"},
+  "斗": {reading:"と",   catchy:"理想を叶えるリーダー",   theme:"器",      strength:"大きな構想を形にする",       caution:"理想論で現実を置き去りにしない"},
+  "女": {reading:"じょ", catchy:"きちんと整えタイプ",     theme:"整え",    strength:"乱れを整える実務力",         caution:"心配を抱え込みすぎない"},
+  "虚": {reading:"きょ", catchy:"ミステリアス夢見タイプ", theme:"夢",      strength:"見えない流れを読む",         caution:"現実逃避に傾かない"},
+  "危": {reading:"き",   catchy:"繊細アラートタイプ",     theme:"変化",    strength:"危機を察知して進路を変える", caution:"不安だけで関係を切らない"},
+  "室": {reading:"しつ", catchy:"居場所クリエイター",     theme:"構築",    strength:"居場所を作る求心力",         caution:"守りに入りすぎない"},
+  "壁": {reading:"へき", catchy:"知識ストックタイプ",     theme:"知恵",    strength:"知識を蓄え人を支える",       caution:"距離を取りすぎない"},
+  "奎": {reading:"けい", catchy:"センス文章タイプ",       theme:"美意識",  strength:"言葉や形で魅せる",           caution:"理想の高さで疲れない"},
+  "婁": {reading:"ろう", catchy:"気配りバランサー",       theme:"世話",    strength:"相手に合わせる柔軟性",       caution:"自分の希望を後回しにしない"},
+  "胃": {reading:"い",   catchy:"欲しいを掴むタイプ",     theme:"獲得",    strength:"必要なものを取りに行く",     caution:"強引さや執着に注意"},
+};
+
+const SHUKU_ORDER = ["昴","畢","觜","参","井","鬼","柳","星","張","翼","軫","角","亢","氐","房","心","尾","箕","斗","女","虚","危","室","壁","奎","婁","胃"];
+const SHUKU_LIST = SHUKU_ORDER.map((name, index) => ({ index, name, ...SHUKU_DETAILS[name] }));
+
+// fortune-mvp の monthStartShuku（旧暦月→月初宿）。デモでは太陽暦月で代替。
+const MONTH_START_SHUKU = {1:"室",2:"奎",3:"胃",4:"畢",5:"参",6:"鬼",7:"張",8:"角",9:"氐",10:"心",11:"斗",12:"虚"};
+
+function resolveShuku(year, month, day){
+  const startName = MONTH_START_SHUKU[month] || "室";
+  const startIndex = SHUKU_LIST.findIndex(s => s.name === startName);
+  const idx = (startIndex + (day - 1)) % 27;
+  return SHUKU_LIST[idx];
+}
+
+// 決定的ハッシュ（fortune-mvp drawTarot と同じ FNV-1a 風）
+function drawTarot(seedText){
+  let hash = 2166136261;
+  for (let i = 0; i < seedText.length; i++){
+    hash ^= seedText.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  const index = Math.abs(hash) % MAJOR_ARCANA.length;
+  const reversed = ((hash >>> 3) & 1) === 1;
+  return { card: MAJOR_ARCANA[index], reversed, index };
+}
+
+/* ============================================================
+   日付セレクタ初期化
+   ============================================================ */
+function pad2(n){ return String(n).padStart(2, "0"); }
+function fillSelect(el, items, placeholder){
+  el.innerHTML = `<option value="">${placeholder}</option>` + items.map(v => `<option value="${v}">${v}</option>`).join("");
+}
+const yearEl  = document.getElementById("bd-year");
+const monthEl = document.getElementById("bd-month");
+const dayEl   = document.getElementById("bd-day");
+const thisYear = new Date().getFullYear();
+const years = [];
+for (let y = thisYear - 16; y >= thisYear - 80; y--) years.push(y);
+fillSelect(yearEl,  years,                                "年");
+fillSelect(monthEl, Array.from({length:12}, (_,i) => i+1),"月");
+fillSelect(dayEl,   Array.from({length:31}, (_,i) => i+1),"日");
+
+function updateDayOptions(){
+  const y = Number(yearEl.value), m = Number(monthEl.value);
+  if (!y || !m){
+    fillSelect(dayEl, Array.from({length:31},(_,i)=>i+1), "日");
+    return;
+  }
+  const last = new Date(y, m, 0).getDate();
+  const cur = Number(dayEl.value);
+  fillSelect(dayEl, Array.from({length:last},(_,i)=>i+1), "日");
+  if (cur && cur <= last) dayEl.value = String(cur);
+}
+yearEl.addEventListener("change", updateDayOptions);
+monthEl.addEventListener("change", updateDayOptions);
+
+/* ============================================================
+   ステップ遷移
+   ============================================================ */
+const steps = {
+  1: document.getElementById("step1"),
+  2: document.getElementById("step2"),
+  3: document.getElementById("step3"),
+};
+function gotoStep(n){
+  Object.values(steps).forEach(s => s.classList.remove("active"));
+  steps[n].classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+const formErr = document.getElementById("form-err");
+const state = { year:null, month:null, day:null, name:"", card:null, reversed:false, shuku:null };
+
+document.getElementById("to-step2").addEventListener("click", () => {
+  const y = Number(yearEl.value), m = Number(monthEl.value), d = Number(dayEl.value);
+  if (!y || !m || !d){
+    formErr.textContent = "生年月日を選択してください。";
+    return;
+  }
+  const dt = new Date(y, m-1, d);
+  if (dt.getFullYear() !== y || dt.getMonth() !== m-1 || dt.getDate() !== d){
+    formErr.textContent = "存在しない日付です。";
+    return;
+  }
+  formErr.textContent = "";
+  state.year = y; state.month = m; state.day = d;
+  state.name = (document.getElementById("bd-name").value || "").trim();
+  resetCard();
+  gotoStep(2);
+});
+
+/* ============================================================
+   カードを引く
+   ============================================================ */
+const cardEl = document.getElementById("card");
+const cardFront = document.getElementById("card-front");
+const drawHint = document.getElementById("draw-hint");
+const toStep3 = document.getElementById("to-step3");
+
+function resetCard(){
+  cardEl.classList.remove("flipped","reversed");
+  drawHint.style.display = "block";
+  toStep3.style.display = "none";
+}
+
+cardEl.addEventListener("click", () => {
+  if (cardEl.classList.contains("flipped")) return;
+
+  const seed = `${state.year}-${pad2(state.month)}-${pad2(state.day)}:${state.name}:${Date.now()}:${Math.random()}`;
+  const drawn = drawTarot(seed);
+  state.card = drawn.card;
+  state.reversed = drawn.reversed;
+
+  // フロント面を埋めてからフリップ
+  cardFront.querySelector(".num").textContent  = pad2(drawn.index) + " · ARCANA";
+  cardFront.querySelector(".glyph").textContent = drawn.card.glyph;
+  cardFront.querySelector(".jp").textContent    = drawn.card.jp;
+  cardFront.querySelector(".en").textContent    = drawn.card.name;
+
+  cardEl.classList.add("flipped");
+  if (drawn.reversed) cardEl.classList.add("reversed");
+
+  drawHint.style.display = "none";
+  setTimeout(() => { toStep3.style.display = "block"; }, 900);
+});
+
+/* ============================================================
+   結果生成 → Step3 表示
+   ============================================================ */
+toStep3.addEventListener("click", () => {
+  buildResult();
+  gotoStep(3);
+});
+
+function buildResult(){
+  const shuku = resolveShuku(state.year, state.month, state.day);
+  state.shuku = shuku;
+  const card = state.card;
+  const reversed = state.reversed;
+  const meaning = reversed ? card.reversed : card.upright;
+  const position = reversed ? "逆位置" : "正位置";
+
+  // 結果カード表示
+  const rcFront = document.getElementById("result-card-front");
+  rcFront.querySelector(".num").textContent   = pad2(MAJOR_ARCANA.indexOf(card)) + " · ARCANA";
+  rcFront.querySelector(".glyph").textContent = card.glyph;
+  rcFront.querySelector(".jp").textContent    = card.jp;
+  rcFront.querySelector(".en").textContent    = card.name;
+  document.getElementById("result-card").classList.toggle("reversed", reversed);
+  document.getElementById("pos-tag").textContent = position;
+
+  // 宿曜まとめ
+  document.getElementById("shuku-name").innerHTML = `${shuku.catchy} <small>${shuku.name}（${shuku.reading}）</small>`;
+  document.getElementById("shuku-desc").textContent = `${shuku.catchy}のあなたは、テーマ「${shuku.theme}」を中心に動くタイプ。${shuku.strength}ことが自然にできます。一方で「${shuku.caution}」点には気を配ると、運の流れが安定します。`;
+  document.getElementById("shuku-strength").textContent = "✦ " + shuku.strength;
+  document.getElementById("shuku-caution").textContent  = "⚠ " + shuku.caution;
+
+  // 融合リーディング
+  document.getElementById("reading-body").innerHTML = renderFusionReading({
+    name: state.name || "あなた",
+    shuku, card, reversed, position, meaning,
+  });
+
+  document.getElementById("result-title").innerHTML = `${state.name ? state.name + "さんへの" : "あなたへの"}<span>メッセージ</span>`;
+}
+
+function renderFusionReading({name, shuku, card, reversed, position, meaning}){
+  // 宿曜タイプ × タロットの組み合わせから、融合した読み物を構築
+  const personLabel = name && name !== "あなた" ? `${name}さん` : "あなた";
+
+  const intro = `今のあなたへ、生年月日から導かれるキャラクタータイプ「${shuku.catchy}」と、いま手元に来た一枚「${card.jp}（${position}）」を重ねて読みます。${shuku.catchy}は${shuku.theme}をテーマに動く人。${personLabel}が${shuku.strength}ことは、今回引いた${card.jp}の「${meaning}」というメッセージと、思っている以上に深く響き合っています。`;
+
+  const polarity = reversed
+    ? `${card.jp}は今、逆位置で出ています。これは「悪い」のではなく、エネルギーが内側に向いているサイン。${shuku.catchy}としての強みである「${shuku.strength}」感覚を、いったん外ではなく自分の整えに使いなさい、という合図として読みます。`
+    : `${card.jp}が正位置で出ているのは、${shuku.catchy}としてのあなたの素のリズムに、今日の流れがまっすぐ味方してくれている時だから。${shuku.strength}ことを、いつもより少しだけ大きめに出してかまわない、という後押しです。`;
+
+  const fusion = `${shuku.catchy}は普段、${shuku.theme}という見えない軸で物事を選んでいます。そこへ${card.jp}（${position}）が示す「${meaning}」が重なると、いま${personLabel}に必要なのは、状況を変えることではなく、選び方を変えること。${reversed ? "派手に動くより、まず一度立ち止まる" : "迷うより、いま気になっているその一つだけ、軽く始めてみる"}方が、流れに乗りやすい時です。`;
+
+  const watchout = `気をつけたいのは、${shuku.catchy}に出やすいクセ「${shuku.caution}」。${card.jp}の${position}が示す注意点と重なると、${reversed ? "感情のもやが思考にかぶさり、必要のない決断まで急ぎたくなる" : "勢いそのままに、本音の確認を飛ばしてしまう"}ことが起こりがちです。決める前にひと呼吸、自分に「これは本当に今やる？」と聞いてあげてください。`;
+
+  const action = `今日やるとよい行動は3つ。① 気になっている小さな未完了をひとつだけ片づける。② ${reversed ? "ノートかメモに、今のもやもやを2行だけ言葉にする" : "誰かに、いま一番ありがたいと思っていることを短く伝える"}。③ ${shuku.strength.replace(/。$/,"")}を、ふだんよりほんの少しだけ意識して動く。これだけで、${card.jp}が示す「${meaning.split("。")[0]}」が、現実の手触りに変わってきます。`;
+
+  const keyphrase = reversed
+    ? `${shuku.theme}を、内側から整える日。`
+    : `${shuku.theme}を、まっすぐ表に出していい日。`;
+
+  return `
+    <h2>はじめに</h2>
+    <p>${intro}</p>
+    <h2>カードが示す方向</h2>
+    <p>${polarity}</p>
+    <h2>宿曜タイプ × タロットの融合</h2>
+    <p>${fusion}</p>
+    <h2>注意したいクセ</h2>
+    <p>${watchout}</p>
+    <h2>今日の開運アクション</h2>
+    <p>${action}</p>
+    <div class="keyphrase">キーフレーズ：${keyphrase}</div>
+  `;
+}
+
+/* ============================================================
+   もう一度引く
+   ============================================================ */
+document.getElementById("retry").addEventListener("click", () => {
+  resetCard();
+  gotoStep(2);
+});
+
+</script>
+</body>
+</html>
